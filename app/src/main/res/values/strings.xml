@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Minimo2Tracks</string>
+    <string name="create_track">CREATE TRACK</string>
+    <string name="get_single_track">GET SINGLE TRACK</string>
+    <string name="get_all_tracks">GET ALL TRACKS</string>
 </resources>
