@@ -7,7 +7,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -17,7 +19,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SingleTrackDialog.SingleTrackDialogListener{
 
     private APIRest myapirest;
     private Recycler recycler;
@@ -62,9 +64,46 @@ public class MainActivity extends AppCompatActivity {
 
         getAllTracks();
 
+        getSingleTrack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openDialog();
+            }
+        });
+
+        getAllTracks.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getAllTracks();
+            }
+        });
+
+        createTrack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openCreateLayout();
+            }
+        });
+
     }
 
-    private void getAllTracks() {
+    private void openCreateLayout(){
+        Intent intent = new Intent(this, CreateTrackActivity.class);
+        startActivity(intent);
+    }
+
+    private void openDialog() {
+        SingleTrackDialog  singleTrackDialog= new SingleTrackDialog();
+        singleTrackDialog.show(getSupportFragmentManager(), "Single Track Dialog");
+    }
+
+    @Override
+    public void applyTexts(int id){
+        getSingleTrack(id);
+    }
+
+
+    public void getAllTracks() {
         Call<List<Track>> trackCall = myapirest.getAllTracks();
 
         trackCall.enqueue(new Callback<List<Track>>() {
@@ -74,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
                     List<Track> tracksList = response.body();
 
                     if(tracksList.size() != 0){
+                        recycler.clear();
                         recycler.addTracks(tracksList);
                     }
 
@@ -96,7 +136,8 @@ public class MainActivity extends AppCompatActivity {
                             .setTitle("Error")
                             .setMessage(response.message())
                             .setCancelable(false)
-                            .setPositiveButton("OK", (dialog, which) -> finish());
+                            .setPositiveButton("OK", (dialog, which) -> {
+                            });
 
                     AlertDialog alertDialog = alertDialogBuilder.create();
                     alertDialog.show();
@@ -116,7 +157,8 @@ public class MainActivity extends AppCompatActivity {
                         .setTitle("Error")
                         .setMessage(t.getMessage())
                         .setCancelable(false)
-                        .setPositiveButton("OK", (dialog, which) -> finish());
+                        .setPositiveButton("OK", (dialog, which) -> {
+                        });
 
                 AlertDialog alertDialog = alertDialogBuilder.create();
                 alertDialog.show();
@@ -124,6 +166,65 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void getSingleTrack (int id){
+        Call<Track> trackCall = myapirest.getTrack(id);
+
+        trackCall.enqueue(new Callback<Track>() {
+            @Override
+            public void onResponse(Call<Track> call, Response<Track> response) {
+                if(response.isSuccessful()){
+                    Track track = response.body();
+
+                    if(recycler.getItemCount() != 0){
+                        recycler.clear();
+                        recycler.addSingleTrack(track);
+                    }
+
+                    Log.i("Single Track id: " +track.id, response.message());
+
+                    progressDialog.hide();
+                }
+                else{
+                    Log.e("No api connection", response.message());
+
+                    progressDialog.hide();
+
+                    //Show the alert dialog
+                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+
+                    alertDialogBuilder
+                            .setTitle("Error")
+                            .setMessage(response.message())
+                            .setCancelable(false)
+                            .setPositiveButton("OK", (dialog, which) -> {
+                            });
+
+                    AlertDialog alertDialog = alertDialogBuilder.create();
+                    alertDialog.show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Track> call, Throwable t) {
+                Log.e("No api connection: ", t.getMessage());
+
+                progressDialog.hide();
+
+                //Show the alert dialog
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+
+                alertDialogBuilder
+                        .setTitle("Error")
+                        .setMessage(t.getMessage())
+                        .setCancelable(false)
+                        .setPositiveButton("OK", (dialog, which) -> {
+                        });
+
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
+            }
+        });
+    }
 
     @Override
     protected void onResume() {

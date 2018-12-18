@@ -15,7 +15,8 @@
         android:layout_marginBottom="10dp"
         android:text="ID:"
         android:textSize="18sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:inputType="number"/>
 
     <TextView
         android:id="@+id/titleTrack"
