@@ -22,7 +22,7 @@ public interface APIRest {
     //GET all tracks
     @GET("tracks")
     Call<List<Track>> getAllTracks();
-gi
+
     //Get an especific track passing its ID
     @GET("tracks/{id}")
     Call<Track> getTrack(@Path("id") int id);
